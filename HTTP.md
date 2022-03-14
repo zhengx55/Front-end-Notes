@@ -15,7 +15,7 @@
 
 ### Response Header
 
-| Syntax           | Description                                                                       | Example                                |
+| Syntax           |                                                                                   | Example                                |
 | ---------------- | --------------------------------------------------------------------------------- | -------------------------------------- |
 | Date             | 服务器响应时间                                                                    |                                        |
 | Connection       | 是否会关闭网络连接                                                                | Connecttion : keep-alive               |
@@ -24,3 +24,31 @@
 | Content-Length   | 报文中实体主体的字节大小                                                          |                                        |
 | Content-Type     | 内容类型                                                                          | Content-Type: text/html; charset=utf-8 |
 | Set-Cookie       | 向客户端发送cookie                                                                |
+
+
+#### Content-Type Usecase
+`
+    Content-Type: "application/x-www-form-urlencoded"
+`
+
+``` fuy=bction fetchByUrlencoded() {
+    fetch('/example',{
+        method: 'POST',
+        headers:{
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+    }).then((res) => {res.json()})
+}
+```
+
+### HTTPS
+
+* HTTPS (Hypertext Transfer Protocol Secure): 超文本传输安全协议, 在HTTP的基础上加了一个Secure的安全协议。
+* HTTPS 是 HTTP 协议的一种扩展, 使用传输层安全性TLS或安全套接字SSL对通信协议进行加密
+* HTTP + SSL(TLS) = HTTPS
+
+### HTTP2
+* Binary TRANSFORMATION
+* 多路复用, 一个链接上可以分为任意多的消息流, 实现并行减少阻塞
+* 头部压缩 减少带宽
+* 服务器推送 减少加载时间
