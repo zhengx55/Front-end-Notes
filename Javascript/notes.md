@@ -50,4 +50,35 @@ function delay(fn, delay, context) {
 window.addEventListener("unhandledrejection", () => {})
 window.onunhandledrejection = event => {}
 ```
- 
+
+### 同步和异步
+- 同步: 执行某个任务时, 没有得到结果之前, 不会继续后续的操作
+- 异步: 一个异步任务执行后, 在没有得到结果之前, 就可以继续执行后续操作。异步任务完成后,一般通过回调通知调用者
+
+### Async
+- Generator 函数(生成器函数)(符合可迭代协议和迭代器协议)
+  - yield表达式, 遇到yield会暂停执行代码, 等待外面调用next并返回对应状态值知道遇到return
+  - Generator对象(返回)
+  - next: 获取下一个状态
+  - return: 结束生成器
+  - throw: 抛出异常
+- 迭代器协议
+  - 定义了产生一系列值得标准方式,当值为有限个时,所有的值都被迭代完毕之后,则返回一个默认值
+- 可迭代协议
+  - 允许JS对象定义它们的迭代行为
+- Async 函数的本质由generator 函数实现, 一种新的语法糖
+  ```
+  async function test() {
+      const r1 = await 1;
+      const r2 = await 2;
+  }
+  
+
+  ES6:
+  __awaiter(this, void 0, void 0, function *(){
+      const r1 = yield 1;
+      const r2 = yield 2;
+  })
+  ```
+
+  - async 函数中, 不是所有异步代码都需要await, 应根据业务逻辑判断.
