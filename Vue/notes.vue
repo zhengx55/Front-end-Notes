@@ -1,7 +1,7 @@
 <template></template>
 
 <script>
-import { reactive, ref, toRefs, watch, watchEff } from "vue";
+import { reactive, ref, toRefs, watch, watchEffect } from "vue";
 export default {
     name: "demo",
     setup() {
@@ -12,8 +12,8 @@ export default {
         // 第一个参数用于确定监听的属性
         // 第二个参数用于监听后的回调
         // 第三个参数用于配置项
-        watch(numberRef, (new, old) => {
-            console.log('ref watch', new, old)
+        watch(numberRef, (newValue, oldValue) => {
+            console.log('ref watch', newValue, oldValue)
         }, {
             immediate: true //初始化之前就进行监听
         });
@@ -25,7 +25,7 @@ export default {
         })
 
 
-        return { numberRef, toRefs(state) }
+        return { numberRef }
     },
 };
 </script>
