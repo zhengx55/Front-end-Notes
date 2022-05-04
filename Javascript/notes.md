@@ -1,3 +1,37 @@
+### 对象
+- 对象的克隆
+  - 浅克隆: 只克隆对象的第一层级
+    - 如果属性只是原始数据类型, 进行只拷贝
+    - 如果属性是引用类型, 拷贝其内存地址
+    - 常用的浅克隆方式: es6 拓展运算符, Object.assign()
+  - 深克隆
+    - 克隆对象的每个层级, 不影响源对象, 但性能方面较低
+      - JSON.stringify + JSON.parese
+        - 只能复制普通的属性, Symbol类型不能复制
+        - 循环引用对象, 比如Window不能复制
+        - 函数类型不能复制
+      - 手动实现深度克隆
+     ``` javascript
+     // 缺陷: 循环引用没法处理, 递归消耗大, 特殊类型为处理
+     function deepClone(obj){
+       if(!isObject(obj))return obj
+       // 判断属性是否为数组
+       // 由于数组会将非数字属性忽略
+       const data = isArray(obj) ? []: {}
+       if(isObject(obj)){
+         data = {};
+         for(let key in obj){
+           if(obj.hasOwnProperty(key)){
+             data[key] = deepClone(obj[key]);
+           }
+         }
+       }
+     }
+     ``` 
+     [deepClone](deepClone.js)
+     [perfect](deepClone_perfect.js)
+
+
 ### Array 中的注意事项
 - indexOf 与 includes
    | 方法     | 返回值  | 能否查找NaN | [, ,] | undefined |
