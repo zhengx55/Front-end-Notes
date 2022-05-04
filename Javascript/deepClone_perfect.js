@@ -4,6 +4,7 @@ function hasOwnProp(obj, property) {
   return hasOwnProperty.call(obj, property);
 }
 
+// 通过构造函数识别对象类型
 function getType(obj) {
   return toString.call(obj).slice(8, -1).toLowerCase();
 }
@@ -121,6 +122,7 @@ var obj = {
   Symbol: Symbol(2),
   bigint: BigInt(100),
 };
+// 循环引用类型
 obj.loop = obj;
 
 const f = cloneDeep(obj);

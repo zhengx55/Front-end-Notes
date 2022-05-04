@@ -29,6 +29,8 @@
      }
      ``` 
      [deepClone](deepClone.js)
+     用循环来代替递归
+     并处理特殊类型
      [perfect](deepClone_perfect.js)
 
 
