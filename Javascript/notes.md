@@ -9,6 +9,124 @@
   - length 可通过修改length 改变数组长度
 - 改变自身的方法: pop shift splice unshift push sort reverse copyWithin fill
 
+### 不同页面之间的交流通信方式
+- websocket / Socketio: 通过服务端进行中转发送到不同的客户端
+- 定时器 以及 客户端存储 : 本地存储 与 本地轮询, cookie产生网络负担, 并受到同源策略限制
+- postMessage: 建立窗口间的联系, 通过postMessage进行跨窗体通讯, iframe
+  ```html
+    <!-- 引用另外的窗体 -->
+    <div>
+        <iframe src="./ifr.html" id="ifr" style="width:600px; height:300px"></iframe>
+    </div>
+
+    index.html
+
+    <div>
+        <div>Message:</div>
+        <div id="messages"></div>
+    </div>
+    <script>
+
+        window.addEventListener("message", function (event) {
+            messages.innerHTML += `
+                <div>${event.data}</div>  
+            `
+        })
+        <!-- 定时向对应窗体对象发送信息 -->
+        setInterval(() => {
+            ifr.contentWindow.postMessage(`message from index.html, ${Date.now()}`)
+        }, 3000)
+
+    </script>
+
+  ```
+- StorageEvent: 当前页面使用的storage被其他页面修改时会触发StorageEvent事件
+  - 缺点: 传递数据大小限制, 同源策略, 相同窗口无法监听, 需要数据清理等
+  ```html
+   <!--first page-->
+      <body>
+      <form>
+
+          <div>
+              <button id="btnSend" type="button">发送消息</button>
+          </div>
+          <div>消息:</div>
+          <div id="message"></div>
+          <script>
+              // 拦截，监听事件
+              const oriSetItem = localStorage.setItem;
+              Object.defineProperty(localStorage.__proto__, 'setItem', {
+                  value: function (key, value) {
+                      var oldValue = localStorage.getItem(key);
+                      var event = new StorageEvent('storage', {
+                          key,
+                          newValue: value,
+                          oldValue,
+                          url: document.URL,
+                          storageArea: localStorage
+                      });
+                      window.dispatchEvent(event);
+                      oriSetItem.apply(this, arguments);
+                  }
+              })
+
+          </script>
+          <script>
+              btnSend.addEventListener('click', function () {
+                  localStorage.setItem('key', JSON.stringify({
+                      key: "key",
+                      data: Math.random()
+                  }))
+              })
+              // 此处的事件监听不生效, 说明相同窗体无法监听到storage事件
+              window.addEventListener("storage", function (ev) {
+                  console.log("ev:", ev);
+                  message.textContent = JSON.stringify({
+                      oldValue: ev.oldValue,
+                      newValue: ev.newValue
+                  })
+              })
+          </script>
+
+      </form>
+  </body>
+  ```
+
+  ``` html
+  <!-- second page -->
+    <body>
+
+      <div>消息:</div>
+      <div id="message"></div>
+      
+      <script>
+          window.addEventListener("storage", function (ev) {
+                  console.log("ev:", ev);
+                  message.textContent = JSON.stringify({
+                      oldValue: ev.oldValue,
+                      newValue: ev.newValue
+                  })
+              })
+      </script>
+  </body>
+  ```
+  
+- BroadcastEvent: 允许同源的不同浏览器窗口或者iframe下的不同文档之间的相互通讯
+  ``` javascript
+    var channel = new BroadcastChannel('my-channel');
+    channel.postMessage('hello')
+
+    // other page -->
+    var listener = new BroadcastChannel('my-channel');
+    channel.addEventListener("message", (e) => console.log(e.data))
+  
+  ```
+- MessageChannel: Chanel Messageing api 的 MessageChannel接口允许我们创建一个新的消息通道, 并通过它的messagePort属性发送数据
+- SharedWorker
+
+### 事件循环
+
+
 ### ES6 promise API
 - promise.all - 全部Promise执行成功或者任意一个执行失败
 - allSettled - 执行多个Promise 无论成功失败结果全部返回
@@ -18,7 +136,7 @@
 - reject
 
 #### Promise 延迟函数
-```
+```javascript
 function delay(fn, delay, context) {
   let defaultDelay = delay || 5000;
   if (!isFunction(fn)) {
@@ -70,6 +188,7 @@ window.onunhandledrejection = event => {}
     - 回调的缺点:回调地狱, 高度耦合, 不利维护等缺点
 
 ### Async
+[promise.js](promise.js)
 - Generator 函数(生成器函数)(符合可迭代协议和迭代器协议)
   - yield表达式, 遇到yield会暂停执行代码, 等待外面调用next并返回对应状态值知道遇到return
   - Generator对象(返回)
