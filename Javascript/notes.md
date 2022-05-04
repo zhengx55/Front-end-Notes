@@ -1,3 +1,14 @@
+### Array 中的注意事项
+- indexOf 与 includes
+   | 方法     | 返回值  | 能否查找NaN | [, ,] | undefined |
+   | -------- | ------- | ----------- | ----- | --------- |
+   | indexOf  | number  | x           | x     | yes       |
+   | includes | boolean | yes         | yes   | yes       |
+
+- length: 代表数组中元素个数, 数组额外付加属性不计算
+  - length 可通过修改length 改变数组长度
+- 改变自身的方法: pop shift splice unshift push sort reverse copyWithin fill
+
 ### ES6 promise API
 - promise.all - 全部Promise执行成功或者任意一个执行失败
 - allSettled - 执行多个Promise 无论成功失败结果全部返回
@@ -123,4 +134,97 @@ window.onunhandledrejection = event => {}
   - 两个状态之间的简单切换可使用css动画
   - 复杂动画可使用JS动画进行控制
 - Web Animation API
-  - 
+
+
+
+
+#### Proxy 对象
+- 创建一个对象的代理, 从而实现基本操作的拦截和自定义 - 查找,赋值 枚举 调用等
+- 通过 Proxy 构造器初始化
+- target: 要使用Proxy 包装的目标对象
+- handler: 一个对象, 个属性中的函数分别定义了在执行各种操作代理的行为。 每个属性, 代表一种可以代办的事项 has, get， set， deletProperty 等
+  - get, set- 读取和设置捕获器
+
+
+#### 异常处理
+[customError.js](customError.js)
+- 错误类型:
+  - 语法错误
+  - 逻辑错误
+  - 错误对象:
+    - SyntaxError
+    - TypeError
+    - URIError
+    - AttregateError: 包含多个错误的错误类型对象
+    - Error: 基础错误类型
+    - RangeError
+    - ReferenceError: 引用错误
+  - 自定义错误类型:
+    - catch 中的内容: 在js中 throw关键字可以将错误抛出, 但是throw不仅能抛出错误对象还可以抛出基本数据类型
+   ```javascript
+   throw '22';
+   throw 22;
+   throw {a: 1}
+   ```
+   ES6 中实现自定义Error类型
+   ``` javascript
+    class CustomError extends Error {
+      // 检查foo 是否 等于 bar
+    constructor(foo = "bar", ...params) {
+      super(...params);
+      // 检查错误中的堆栈信息
+      if (Error.captureStackTrace) {
+        Error.captureStackTrace(this, CustomError);
+      }
+
+      this.name = "MyError";
+      this.foo = foo;
+      this.date = new Date();
+      }
+  } 
+   ```
+   - 异常类型的判断
+     - instanceof
+     - constructor
+     - Error.Prototype.name
+  ``` javascript
+    const error = new TypeError();
+    error instanceof TypeError;
+    error.constructor === TypeError;
+    error.name === 'TypeError'
+    // 注意 后两种方法可能会发生改写
+   ```
+   #### 异步异常事件
+   - unhandledrejection: 当Promise被reject且没有reject处理器的时候, 会触发unhandledrejection事件
+   - rejectionHandled: 当Promise被rejected且有rejection处理器时会在全局触发rejectionhandled事件
+
+  ``` javascript
+      window.addEventListener("unhandledrejection", function (e) {
+            //阻断异常继续抛出
+            e.preventDefault();
+            console.log("unhandledrejection捕获到promise错误的原因是：", e.reason);
+            console.log("unhandledrejection Promise 对象是：", e.promise);
+            return true;
+        });
+        //promise异常被处理了, 该事件被捕捉到了
+        window.addEventListener('rejectionhandled', e => {
+             // rejected的原因
+            console.log('rejectionhandled:', e.reason);
+        })
+
+        const p1 = new Promise((resolve, reject) => {
+            reject("promise error1");
+        });
+
+        setTimeout(() => {
+            p1.catch((e) => {
+                console.log("catch捕获到promise1 错误:", e);
+            })
+        }, 1000)
+  ```
+
+  ### 装饰器 Decorator
+  [Decorator.js](Decorator.js)
+  - 他是一个包装, 类对象, 方法, 以及属性
+  - 在js 以函数的形式存在
+  - 装饰器对类的行为的改变是在代码编译时发生
