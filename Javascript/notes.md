@@ -1,4 +1,14 @@
 ### 对象
+- 对象的属性遍历
+  [object_key_loop](object_key_loop.js)
+  - 属性分为 普通属性, 原型属性, 不可枚举的属性, Symbol属性, 静态属性
+  
+- JSON对象
+  - 一种文本协议
+  - 是Object对象, 一种轻量级, 基于文本, 与语言无关的写法, 用于定义数据的交换格式
+  - key只能是字符串
+  - value 只能是obj array number string true false null
+  - undefined Symbol 不能作为JSON对象的value
 - 对象的克隆
   - 浅克隆: 只克隆对象的第一层级
     - 如果属性只是原始数据类型, 进行只拷贝
@@ -33,6 +43,61 @@
      并处理特殊类型
      [perfect](deepClone_perfect.js)
 
+### 链式调用
+实现一个链式调用的计算器代码
+```javascript
+  class Calculator {
+    constructor(val) {
+        this.val = val;
+    }
+
+    double() {
+        const val = this.val * 2;
+        return new Calculator(val)
+    }
+
+    add(num) {
+        const val = this.val + num;
+        return new Calculator(val)
+    }
+
+    minus(num) {
+        const val = this.val - num;
+        return new Calculator(val)
+    }
+
+    multi(num) {
+        const val = this.val * num;
+        return new Calculator(val)
+    }
+
+    divide(num) {
+        const val = this.val / num;
+        return new Calculator(val)
+    }
+
+    pow(num) {
+        const val = Math.pow(this.val, num);
+        return new Calculator(val)
+    }
+
+    get value() {
+        return this.val;
+    }
+}
+
+const cal = new Calculator(10);
+
+const val = cal.add(10) // 20
+    .minus(5) // 15
+    .double() // 30
+    .multi(10) // 300
+    .divide(2) // 150
+    .pow(2)   // 22500
+    .value;
+console.log(val); // 22500
+```
+
 
 ### Array 中的注意事项
 - indexOf 与 includes
@@ -44,6 +109,46 @@
 - length: 代表数组中元素个数, 数组额外付加属性不计算
   - length 可通过修改length 改变数组长度
 - 改变自身的方法: pop shift splice unshift push sort reverse copyWithin fill
+
+### 作用域
+  - 作用域链: 作用域也可以根据代码层次分层, 以便子作用域可以访问父作用域, 而不能从父作用域引用子作用域中的变量和引用 
+  - 全局作用域
+  - 函数作用域
+  - 块级作用域
+  - 执行上下文vs作用域:
+    - 创建时间:
+      - 作用域: 函数创建时已确定, 静态运行
+      - 上下文: 运行时创建, 动态运行
+  - 执行上下文: js 代码被解析和执行时的环境
+    - this
+    - 变量环境
+    - 词法环境: let, const(ES6 新增)
+    - 外部环境
+    - 代码在编译时的查找顺序, 从词法环境开始逐步查找到变量环境再到外部全局环境
+    - 上下文：
+      - 全局执行上下文
+      - 函数执行上下文: 函数每次在调用时动态创建的上下文. 执行栈。栈的数量是有限制的, 尽可能不要超出调用堆栈的创建数量(递归爆栈)
+### 闭包
+
+### 暂时性死区
+- let和const 生命的变量在复制之前不能对齐进行操作或者赋值
+
+### IIFE- 立即执行函数
+- 常用于插件的编写
+- 可以通过一元运算符触发IIFE
+  ``` javascript
+  (function(num1,num2){
+    console.log(num1+num2);
+  })(7,9);
+
+  (function(num1,num2){
+      console.log(num1+num2);
+  }(7,9));
+
+  function (num1,num2){
+      console.log(num1+num2);
+  }(7,9)
+   ```
 
 ### 不同页面之间的交流通信方式
 - websocket / Socketio: 通过服务端进行中转发送到不同的客户端
@@ -383,3 +488,15 @@ window.onunhandledrejection = event => {}
   - 他是一个包装, 类对象, 方法, 以及属性
   - 在js 以函数的形式存在
   - 装饰器对类的行为的改变是在代码编译时发生
+
+### SessionStorage vs LocalStorage
+- SessionStorage: 为每一个给定的源维持一个独立的存储区域, 该存储区域在页面会话期间可
+- localStorage: 同样的功能, 但是在浏览器关闭后数据仍然存在
+- sessionStorage 和 localStorage统称为Web Storage(API)
+- 都遵循同源策略, 并拥有相同的储存容量
+- 都是存储字符, 保存对象的时候寻要转义为字符串, 通常使用JSON.stringify()
+
+
+```typescript
+ 
+ ```
