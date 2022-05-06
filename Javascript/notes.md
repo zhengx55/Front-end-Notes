@@ -128,6 +128,21 @@ console.log(val); // 22500
     - 上下文：
       - 全局执行上下文
       - 函数执行上下文: 函数每次在调用时动态创建的上下文. 执行栈。栈的数量是有限制的, 尽可能不要超出调用堆栈的创建数量(递归爆栈)
+
+### 原型链
+[原型与原型链](proto.js)
+  - 借鉴Self语言, 基于原型实现的继承机制
+  - 共享数据, 减少空间占用, 节省内存
+  - 实现继承
+  - prototype, constructor, __proto__
+    - prototype 本质是一个普通对象, 普通对象都有__proto__属性
+      - 节省内存,实现继承和代码复用
+    - 普通函数或者class既有prototype属性, 又有__proto__属性
+    - __proto__: 一个访问器属性(一个getter函数和一个setter函数, 暴露了通过它访问的对象的内部[[Prototype]])
+      - 已经出现新的调用方式: Object.getPropertyof()
+      - 构造函数的原型
+      - 根据此属性形成原型链, 原型链的终点为null 
+   
 ### 闭包
 
 ### 暂时性死区
@@ -500,3 +515,74 @@ window.onunhandledrejection = event => {}
 ```typescript
  
  ```
+
+
+ ### DOM 节点
+- Node: 一个借口
+- Element: 通用性的基类, nodeType为1, 是Node的一类实现。 其子类统统称为元素
+- HTMLCollenction: Element子类集合
+- NodeList: 所有Node子类结合
+  -方法:
+    - getElementById:
+      - 只返回元素, nodeType为1的Element
+      - id大小写敏感
+      - 如果有多个元素有相同Id, 只返回第一个元素
+      - 此方法仅仅存在于Document实例上
+    - getElementsByClassName:
+      - 返回结果是实时元素集合, 但并不是数组形式
+      - 可以同时匹配多个class
+      - 元素均拥有此方法, 不限于document
+    - getElementsByName:
+      - 返回实时的节点集合NodeList
+      - 包括不能被解析的节点(指吴小姐点)
+      - 此方法仅存在于Document的实例上
+    - getElementByTagName:
+    - querySelector
+      - 根据css选择器进行节点查询
+      - 仅仅返回第一个元素
+      - 元素都有此方法
+      - 注意css的转义字符(Js 字符串转义一次, quertySelector 再字符串转移一次)
+    - querySelectorAll
+      - 返回节点列表NodeList
+      - 注意: 返回的节点列表是静态列表, 对列表进行操作不会对原返回值进行改变
+      - scope 前缀, 精准查找, 防止返回非预期列表
+  - NodeList 和 元素集合的遍历
+    - for/while
+    - NodeList.prototype.forEach
+    - 转换成数组
+  - 遍历某个节点或者子节点或者整个元素的遍历
+    - children/childNodes
+    - NodeIterator Vs TreeWalker
+      - TreeWalker 额外支持 parentNode, nextSibiling, firstChild, lastChild
+
+```html 
+<body>
+    <div class="outer" id="outer">
+        <!-- 测试-->
+        <ul class="list list-1">
+            <li name="li-item" class="item item2 item3">list-one</li>
+            <li class="item">list-two</li>
+            <li class="item">list-three</li>
+        </ul>
+    </div>
+    <div class="outer2" id="outer"></div>
+    <div id="foo\bar">ccc</div>
+
+    <script>
+        const iterator = document.createNodeIterator(
+            document.getElementById("outer"),
+            NodeFilter.SHOW_ELEMENT,
+            {
+                acceptNode(node) {
+                    return node.tagName === 'LI' ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+                }
+            }
+        );
+        var currentNode;
+        while (currentNode = iterator.nextNode()) {
+            console.log(currentNode.innerText)
+        }
+
+    </script>
+</body>
+```
