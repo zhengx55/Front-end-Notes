@@ -1,10 +1,116 @@
+### WeakMap and WeakSet
+- WeakMap 和 Map 得以一个不同点就是, WeakMap的键必须是对象, 不能是原始的数据类型
+  ``` javascript
+  let WeakMap = new WeakMap();
+  let obj = {}
+  WeakMap.set(obj, "hi")
+
+  ```
+- WeakMap 不支持迭代以及 keys(), values(), entries(), 所以没有办法获取WeakMap的所有键或者值
+- WeakMap 支持的方法
+  - weakMap.get(key)
+  - weakMap.set(key, value)
+  - weakMap.delete(key)
+  - weakMap.has(key)
+
 ### 对象
 - 对象的属性遍历
   [object_key_loop](object_key_loop.js)
   - 属性分为 普通属性, 原型属性, 不可枚举的属性, Symbol属性, 静态属性
+- 对象的属性标志和属性描述符
+  - properties
+    - writable
+    - enumerable - 如果为true , 则会在循环中列出
+    - configurable - 如果为true, 则此属性可以被删除或被修改
+    - 通过Object.getOwnPropertyDescriptor(obj, propertyname)潮汛对象属性标志
+  ``` javascript
+  let user = {
+  name: "John"
+  };
+  let descriptor = Object.getOwnPropertyDescriptor(user, 'name');
+
+  alert( JSON.stringify(descriptor, null, 2 ) );
+  /* 属性描述符：
+  {
+    "value": "John",
+    "writable": true,
+    "enumerable": true,
+    "configurable": true
+  }
+  */
+
+  ```
+  - 可以通过Object.defineProperty() 来修改标志
+  ``` javascript
+
+  let user = {};
+  Object.defineProperty(user, "name", {
+    value: "John"
+  });
+
+  let descriptor = Object.getOwnPropertyDescriptor(user, 'name');
+
+  alert( JSON.stringify(descriptor, null, 2 ) );
+  /*
+  {
+    "value": "John",
+    "writable": false,
+    "enumerable": false,
+    "configurable": false
+  }
+  */
+
+  let user = {
+  name: "John"
+  };
+
+  Object.defineProperty(user, "name", {
+    writable: false
+  });
+
+  user.name = "Pete"; // Error: Cannot assign to read only property 'name'
+
+  let user = {
+  name: "John",
+  toString() {
+    return this.name;
+  }
+  };
+
+  Object.defineProperty(user, "toString", {
+    enumerable: false
+  });
+
+  // 现在我们的 toString 消失了：
+  for (let key in user) alert(key); // name
+
+  let user = {
+  name: "John"
+  };
+
+  Object.defineProperty(user, "name", {
+    configurable: false
+  });
+
+  user.name = "Pete"; // 正常工作
+  delete user.name; // ErrorHandler`
+    ```
   
 - JSON对象
-  - 一种文本协议
+  - 一种文本协议, 是表示值和对象的通用格式, 最初是为Javascript 创建, 后续其他编程语言也出现用于处理它的库. 因此当服务端使用其他预语言时可以更好地进行数据转换
+  - JSON.stringify 得到的字符串时一个被称为JSON编码或序列化的对象
+    - 字符串使用双引号, JSON中没有单引号
+    - 对象属性名也会强制变成双引号
+    - JSON 是语言无关的纯数据规范, 因此一些特定的Js对象会被忽略: 函数, Symbol, undefined
+    ``` javascript
+    let user = {
+    sayHi() { // 被忽略
+      alert("Hello");
+    },
+    [Symbol("id")]: 123, // 被忽略
+    something: undefined // 被忽略
+    };
+    ```
   - 是Object对象, 一种轻量级, 基于文本, 与语言无关的写法, 用于定义数据的交换格式
   - key只能是字符串
   - value 只能是obj array number string true false null
@@ -410,17 +516,6 @@ window.onunhandledrejection = event => {}
   - 复杂动画可使用JS动画进行控制
 - Web Animation API
 
-
-
-
-#### Proxy 对象
-- 创建一个对象的代理, 从而实现基本操作的拦截和自定义 - 查找,赋值 枚举 调用等
-- 通过 Proxy 构造器初始化
-- target: 要使用Proxy 包装的目标对象
-- handler: 一个对象, 个属性中的函数分别定义了在执行各种操作代理的行为。 每个属性, 代表一种可以代办的事项 has, get， set， deletProperty 等
-  - get, set- 读取和设置捕获器
-
-
 #### 异常处理
 [customError.js](customError.js)
 - 错误类型:
@@ -503,6 +598,13 @@ window.onunhandledrejection = event => {}
   - 他是一个包装, 类对象, 方法, 以及属性
   - 在js 以函数的形式存在
   - 装饰器对类的行为的改变是在代码编译时发生
+  - 需要使用babel进行编译前的转义
+    - 参数:target, name, descriptor
+    - 装饰器的本质是利用了es5的Object.defineProperty属性, 这三个参数与其相对应
+  - 装饰器模式: 给对象动态添加职责, 并不真正改动对象自身
+    - 需要拓展一个类的功能, 或给一个类添加额外方法
+    - 需要动态的给一个对象增加功能并随时动态撤销
+    - 需要增加一些基本功能的排列组合而产生的非常大量的功能
 
 ### SessionStorage vs LocalStorage
 - SessionStorage: 为每一个给定的源维持一个独立的存储区域, 该存储区域在页面会话期间可
@@ -586,3 +688,98 @@ window.onunhandledrejection = event => {}
     </script>
 </body>
 ```
+
+### 微任务队列
+- 异步任务需要适当的管理
+- 只有在Javascript 引擎中没有其他任务在进行时, 才开始执行任务队列中的任务
+  - 当一个promise准备就绪时, 他的 .then / .catch / .finally 处理程序就会被放到队列中, 但是他们不会立即被执行, 当Js引擎执行完当前的代码, 他会从队列中获取任务并执行它
+
+### 字符串编码
+- 字符串的遍历:
+
+### 函数柯里化
+- Currying 是一种函数的高阶技术. 它是指将一个函数从可调用的f(a,b,c)转换为可调的f(a)(b)(c).
+- 柯里化不会调用函数, 它只是对函数进行转换
+``` javascript
+function curry(f){
+  return function(a){
+    return function(b){
+      return f(a,b)
+    }
+  }
+  // 用法
+  function sum(a,b){
+    return a + b
+  }
+
+  let curriedSum = curry(sum)
+  curriedSum(1)(2)
+}
+```
+- curry(func)的结果就是一个包装器function(a)
+- 当它被像curriedSum(1)这样被调用时, 它的参数会保存在词法环境中, 然后返回一个新的包装器function(b)
+- 当这个包装器以2为参数调用, 并且, 它将该调用传递给原始的sum函数
+
+- 高级柯里化
+  ``` javascript
+  function curry(func){
+    return function curried(...args){
+      if(args.length >= func.length){
+        return func.apply(this, args);
+    }else{
+      return function(...args2){
+        return curried.apply(this, args.concat(args2));
+    }
+  }
+
+  ```
+
+  ### Proxy 和 Reflect
+- 创建一个对象的代理, 从而实现基本操作的拦截和自定义 - 查找,赋值 枚举 调用等
+- 通过 Proxy 构造器初始化
+- target: 要使用Proxy 包装的目标对象
+- handler: 一个对象, 个属性中的函数分别定义了在执行各种操作代理的行为。 每个属性, 代表一种可以代办的事项 has, get， set， deletProperty 等
+  - get, set- 读取和设置捕获器
+-  一个Proxy对象包装另一个对象并拦截诸如读取/写入属性和其他操作, 可以选择自行处理它们, 或者透明地允许该对象处理他们
+-  语法
+    ``` javascript
+    let proxy = new Proxy(target, handler)
+    // target - 是要包装的对象, 可以是任何东西, 包括函数
+    // handler - 代理配置: 带有捕捉器的对象。 比如get捕捉器用于读取target的属性, set捕捉器用于写入target的属性
+    ```
+-  对proxy 进行操作, 如果在handler中存在相应的捕捉器, 则它将运行, 并且Proxy有机会对其处理, 否则将直接对target进行处理.
+-  get 捕捉器
+   -  target 目标对象, 该对象作为第一个参数传递给new Proxy
+   -  property 目标属性名
+   -  receiver 如果目标属性是一个getter 访问属性, 则receiver就是本次读取属性所在的this对象, 通常就是proxy对象本身
+- set 捕捉器
+    - target
+    - property
+    - value
+    - receiver
+- deletProperty
+- has 捕捉器
+- Reflect
+  - Reflect 是一个内建对象, 可以简化Proxy的创建
+  - 内部方法的最小包装
+  - obj[prop] => reflect.get(obj, prop)
+  - obj[prop] => reflect.set(obj, prop, value)
+  - delete obj[prop] => reflect.deleteProperty(obj, prop)
+  - new F(value) => reflect.construct(F, value)
+  - 每个可被Proxy 捕捉的内部方法, 在Reflect中都有一个队形的方法, 其名称和参数与Proxy捕捉器相同
+
+### JS 中的模块
+- AMD
+- CommonJs
+- UMD
+  - 一个模块等同于一个文件
+  - 模块之间可以相互家宅, 并使用export 和 import 来交换功能
+  - 模块仅在第一次导入时被解析, 如果同一个模块别导入到多个其他位置, 那么它的代码只会执行一次
+  - 顶层模块代码应该用于初始化, 创建模块特定的内部数据结构, 如果我们需要多次调用某些东西, 我们应该将其以函数的形式导出
+- import.meta
+  - 包换当前模块信息, 它的内容取决于其所在的环境, 在浏览器环境下, 它包含当前脚本的URL， 或者如果他是在HTML中的话则包含当前页面的url
+  ``` html
+<script type="module">
+  console.log(import.meta.url)
+</script>
+  ```
