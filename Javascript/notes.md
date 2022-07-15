@@ -95,7 +95,14 @@
   user.name = "Pete"; // 正常工作
   delete user.name; // ErrorHandler`
     ```
-  
+  - 属性的getter 和 setter
+    - 访问器属性 getter , setter
+    - 访问器属性用get 和 set 表示
+    - 访问器描述符
+      - get - 一个没有参数的函数, 在数据读取时工作
+      - set - 带有一个参数的函数, 当属性被设置时调用
+      - enumerable 
+      - configurable
 - JSON对象
   - 一种文本协议, 是表示值和对象的通用格式, 最初是为Javascript 创建, 后续其他编程语言也出现用于处理它的库. 因此当服务端使用其他预语言时可以更好地进行数据转换
   - JSON.stringify 得到的字符串时一个被称为JSON编码或序列化的对象
@@ -735,6 +742,7 @@ function curry(f){
   ```
 
   ### Proxy 和 Reflect
+  [proxy.js](Proxy.js )
 - 创建一个对象的代理, 从而实现基本操作的拦截和自定义 - 查找,赋值 枚举 调用等
 - 通过 Proxy 构造器初始化
 - target: 要使用Proxy 包装的目标对象
@@ -779,7 +787,7 @@ function curry(f){
 - import.meta
   - 包换当前模块信息, 它的内容取决于其所在的环境, 在浏览器环境下, 它包含当前脚本的URL， 或者如果他是在HTML中的话则包含当前页面的url
   ``` html
-<script type="module">
+  <script type="module">
   console.log(import.meta.url)
-</script>
+  </script>
   ```
